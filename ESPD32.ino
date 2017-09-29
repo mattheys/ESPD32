@@ -13,9 +13,9 @@ Epd epd;
 
 RTC_DATA_ATTR int bootCount = 0;
 
-const size_t bufferSize = JSON_ARRAY_SIZE(3) + 4*JSON_OBJECT_SIZE(6) + 1350;
-DynamicJsonBuffer jsonBuffer(bufferSize);
-
+const size_t bufferSize = JSON_ARRAY_SIZE(3) + 4*JSON_OBJECT_SIZE(6) + 450;
+StaticJsonBuffer<bufferSize> jsonBuffer;
+JsonVariant root;
 
 void setup() {
 
@@ -47,7 +47,7 @@ void setup() {
       return;
   }
 
-  //getJson();
+  getJson();
 
   paint.SetRotate(ROTATE_0);
   printTime();
@@ -165,11 +165,8 @@ void getJson() {
       return;
   }
 
-    // We now create a URI for the request
-    String url = "/red/epd";
-
     // This will send the request to the server
-    client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+    client.print(String("GET /red/epd HTTP/1.1\r\n") +
                  "Host: heys.suroot.com\r\n" +
                  "Connection: close\r\n\r\n");
     unsigned long timeout = millis();
@@ -180,10 +177,11 @@ void getJson() {
             return;
         }
     }
-
+    Serial.println("Got here");
     // Read all the lines of the reply from server and print them to Serial
-    String header = client.readStringUntil('\r\n\r\n');
-    const char* body = client.readString().c_str();
+    String header = client.readStringUntil('\r\r');
+    String body = client.readString();
+    Serial.println(body);
     
-    JsonObject& poot = jsonBuffer.parseObject(body);
+    root = jsonBuffer.parseObject(body);
 }
